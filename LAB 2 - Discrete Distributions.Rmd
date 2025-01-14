@@ -1,0 +1,157 @@
+---
+title: "Lab 2 - Discrete Distributions"
+author: "Vy Vuong"
+date: "2025-01-14"
+output: html_document
+---
+This lab will focus on the discrete probability distributions which we have been learning about in class.
+In addition to a final answer, you are required to submit the code that you used to obtain the answer, with comments/print-outs as appropriate. 
+R has excellent built-in functionality for calculating probabilities. In this assignment, you will be using the functions for the Binomial and Poisson distributions (documentation here, and here). Each distribution has four associated functions:
+-	Probability density, e.g., dbinom
+-	Cumulative distribution, e.g., pbinom
+-	Quantile function, e.g., qbinom
+-	Random sampling function, e.g., rbinom
+To check your answers, feel free to use an online probability calculator, which has a more intuitive user interface than R. Here is one for binomial distributions, and here is one for Poisson distributions. 
+In most of the following problems, you are only trying to calculate a probability. However, in a few questions, rather than finding a probability, you are using a calculated probability to decide whether some assumption is true. This is an important principle of statistics that we will be examining in greater depth later in the quarter. This process is called hypothesis testing. In many situations, we may be interested in testing whether some assumption is in fact correct for our data. We look at whether our observed data seem reasonable, given some assumption. We go about this by seeing what the probability would be, if our assumption were correct, of seeing a result at least as far away from what we would expect as what was observed in our data. If this probability is low (a common rule of thumb is if it is below 5%), that tells us that we would not have expected our data to have occurred if our assumption were correct, and therefore the most likely explanation is that our assumption is incorrect. If the probability is not low (above 5%), then our data is not inconsistent with our assumption, and, while we cannot say for certain that our assumption is correct, we can at least say that there is no evidence it is wrong. Keep in mind, however, that 5% is only a guideline, not a hard rule. If you find that the probability of a certain outcome is 7%, for instance, that should draw nearly as much scrutiny as 5%, especially if we are dealing with a small sample size. 
+For example, suppose you are flipping a coin 10 times. Our starting assumption is that the coin is fair, that is, that the probability of heads is ½. Now suppose we only get heads one time out of the ten flips. The chance of seeing one or fewer heads is about .011. That means that if we repeatedly flipped sets of ten coins, we would only expect to see one or fewer coins per ten about one time out of every hundred sets of ten coins - it would be very unusual to see so few heads if the coin were fair, and so we conclude that our assumption of a fair coin appears to be incorrect, and the probability of heads is likely actually something less than ½. If, on the other hand, we got heads three times, the chance of seeing three or fewer heads is about .172. This means it would not be that unusual, given our assumption, and so we would not see any reason to question our assumption – there is no evidence the coin is unfair. For these types of questions, our answer will always be one of these two types – either stating that our assumed value seems reasonable given the data, or stating that we would question our assumption, and conclude the value must actually be different in some way.
+Goals for this assignment:
+•	Learn to use R to calculate binomial and Poisson probabilities
+•	Identify which distribution is appropriate for a given problem
+•	Understand how to use probabilities to answer questions about the reasonableness of assumptions
+Grading: there are two possible points for each problem.
+
+# Activity 1
+In the general population, about 10% of people are left-handed.
+a)	Suppose I randomly pick 200 people. What is the chance I will see fewer than 15 people who are left-handed?
+```{r}
+n <- 200
+p <- 0.1
+sum (dbinom(0:14,n,p))
+```
+Results: The chance of seeing fewer than 15 people who are left-handed randomly picked out of 200 is ~0.0929 or 
+9.29%.
+
+
+b)	Suppose I randomly pick 300 people. What is the chance I will see at least 40 people who are left-handed?
+```{r}
+n<- 300
+p <- 0.1
+sum(dbinom(0:39, n,p))
+```
+Results: The chance of seeing at least 40 people who are left-handed randomly picked out of 300 is ~0.0378 or 
+3.78%.
+
+
+c)	The Seattle Mariners have 21 pitchers. Of those 21 pitchers, 4 are left-handed. If we assume the probability of a pitcher being left-handed is the same as the probability of any randomly selected person from the general population being left-handed, what would be the probability of seeing at least 4 left-handed pitchers out of 21? 
+
+```{r}
+n<- 21
+p <- 0.1
+sum(dbinom(0:3,n,p))
+1-sum(dbinom(0:3,n,p))
+```
+
+Results: The probability of seeing at least 4 left-handed pitchers out of 21 is 0.152 or 15.2%. 
+
+d)	Based on your answer from part c), does our assumption about the probability of a pitcher being left-handed seem reasonable? If not, how does the probability differ from the probability for the general population?
+  Based on the calculated probability of 15.2% for observing at least 4 left-handed pitchers out of 21 in the Seattle Mariners (discussed in part c), the assumption that the probability of a pitcher being left-handed is the same as the general population appears reasonable. While the 15.2% is a bit higher than the 10% general population rate, it's not significantly different. Still, it's important to be cautious because of the small sample size, and it might be a good idea to dig deeper or gather more data for a more thorough analysis. Despite the probability exceeding the common 5% threshold used in hypothesis testing, the small sample size should be acknowledged when interpreting the results.
+  
+e)	The Seattle Mariners have 3 catchers. All 3 of them are right-handed. If we assume the probability of a catcher being left-handed is the same as the probability of any randomly selected person from the general population being left-handed, what would be the probability of seeing no left-handed catchers out of 3? 
+
+```{r}
+n<- 3
+p <- 0.1
+dbinom(0,n,p)
+
+```
+
+Results: The probability of seeing no left-handed catchers out of 3 is 0.729 is 72.9%. 
+
+f)	Based on your answer from part e), does our assumption about the probability of a catcher being left-handed seem reasonable? If not, how does the probability differ from the probability for the general population?
+The chance of seeing no left-handed catchers is relatively high (72.9%), indicating that all three catchers may be righthanded. This suggests that there is at least a 27.1% chance of seeing of a catcher being left-handed which is pretty high compared to the 10% of the general population which seems not so reasonable. However, because this question is in the context of a really small sample size (3 catchers), probabilities can exhibit greater variability. The observed high probability of all right-handed catchers is not unexpected within this limited sample, and this variability should be considered when interpreting the results.
+
+g)	Suppose we were to look at a larger sample of catchers. If every catcher we sampled were right-handed, how many catchers would we need to sample before you would conclude that the true probability of a catcher being left-handed is less than 10%? 
+
+In order to find the minimum sample size needed to draw a conclusion about the left-handedness of catchers, we iteratively adjust the sample size until the probability of observing 0 left-handed catchers is less than or equal to a specified significance level, which is 0.05. 
+```{r}
+# Function to find the minimum n for which P(X <= k) is <= threshold 
+find_min_n_for_probability <- function(k, p, threshold) {
+  n <- 1
+  while (pbinom(k, n, p) > threshold) {
+    n <- n + 1
+  }
+  return(n)  # Ensure the function returns the result
+}
+
+# Set parameters
+k <- 0  # Number of right-handed catchers
+p <- 0.10  # Assumed probability of a catcher being left-handed
+threshold <- 0.05  # Threshold for significance level
+
+# Find the minimum n
+min_n <- find_min_n_for_probability(k, p, threshold)
+
+# Print the result
+cat("The minimum sample size (n) needed to conclude that the true probability is less than 10%:", min_n, "\n")
+```
+
+Results: The set probability of seeing no left-handed catchers falls below 5% before concluding that the true probability of a catcher being left-handed is less than 10% has the sample size of 29.
+
+
+
+
+# Activity 2
+Suppose you are designing a computer server for students to log into to work remotely. You know that on average you will see ten students logging into the server per hour.
+h)	What is the chance that more than 15 students will log into the server in a particular hour?
+
+```{r}
+# Given average number of students logging in per hour lambda <- 10
+# Probability of more than 15 students logging in
+1 - ppois(15, lambda)
+probability_more_than_15 <- 1 - ppois(15, lambda)
+
+```
+
+Results: The chance that more than 15 students will log into the server in a particular hour is ~0.0487 or 4.87%
+
+i)	What is the chance of seeing exactly 10 students log into the server in a particular hour?
+```{r}
+# Given average number of students logging in per hour 
+lambda_val <- 10
+# Probability of exactly 10 students logging in 
+probability_exactly_10 <- dpois(10, lambda_val)
+# Print the result
+cat("Probability of exactly 10 students logging in:", probability_exactly_10, "\n")
+
+```
+
+Results: The chance of seeing exactly 10 students log into the server in a particular hour is ~0.1251 or 12.51%
+
+j)	What is the chance of fewer than 15 students logging into the server in a two-hour period?
+```{r}
+# Given average number of students logging in per hour 
+lambda_val <- 10
+# Probability of fewer than 15 students logging in during a two-hour period 
+probability_fewer_than_15 <- ppois(14, 2 * lambda_val)
+# Print the result
+cat("Probability of fewer than 15 students logging in in a two-hour period:", probability_fewer_than_15, "\n")
+
+```
+
+Results: The chance of fewer than 15 students logging into the server in a two-hour period is ~0.1049 or 10.49%
+
+k)	In designing the server, you must decide the maximum number of students that it can accommodate at one time. The more students you allow it to accommodate, the more expensive it will be. But if more students attempt to log in during a single hour than it can accommodate, it will crash. How many students should you design it to accommodate if you want there to be at most a 1% chance that it will crash during any particular hour?
+The average number of students logging in per hour (λ) is given as 10. We want to find the maximum number (k) such that the cumulative probability of observing k or fewer students is at least 99%.
+```{r}
+# Given average number of students logging in per hour 
+lambda_val <- 10
+# Find the maximum number of students to accommodate 
+max_students <- qpois(0.99, lambda_val)
+# Print the result
+cat("Maximum number of students to accommodate:", max_students, "\n")
+
+```
+
+Results: 18 students should be designed to accommodate if we want there to be at most a 1% chance that it will crash during any particular hour.
+
+
